@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.ClipboardContent;
@@ -21,11 +22,14 @@ import ru.report.model.House;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StartController {
 
     private static final String FILE_PATH = "C:/report/report.xlsx";
     private static DataFormat CLIPBOARD_DATA_FORMAT = new DataFormat(House.class.getName());
+    private ObservableList<House> houses;
     private Start start;
 
     @FXML
@@ -50,15 +54,19 @@ public class StartController {
     public void init() {
         columnUnomData.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getUnom()));
         columnAddressData.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getAddress()));
+        tableViewData.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+       // tableViewData.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
         tableViewData.setItems(getData());
+
 
         // Начало пертаскивания
         tableViewData.setOnDragDetected(event -> {
             TableView<House> modelTableView = (TableView) event.getSource();
-            House selectedItem = modelTableView.getSelectionModel().getSelectedItem();
-            if (selectedItem != null) {
+            //House selectedItem = modelTableView.getSelectionModel().getSelectedItem();//SelectionMode.SINGLE
+            List<House> selectedItems = new ArrayList<>(modelTableView.getSelectionModel().getSelectedItems());
+            if (selectedItems != null) {
                 ClipboardContent content = new ClipboardContent();
-                content.put(CLIPBOARD_DATA_FORMAT, selectedItem);
+                content.put(CLIPBOARD_DATA_FORMAT, selectedItems);
 
                 modelTableView.startDragAndDrop(TransferMode.ANY).setContent(content);
             }
@@ -80,8 +88,10 @@ public class StartController {
             Dragboard db = event.getDragboard();
             boolean completed = false;
             if (db.hasContent(CLIPBOARD_DATA_FORMAT)) {
-                House content = (House) db.getContent(CLIPBOARD_DATA_FORMAT);
-                tableView.getItems().add(content);
+             //   House content = (House) db.getContent(CLIPBOARD_DATA_FORMAT);//SelectionMode.SINGLE
+                List<House> contents = (ArrayList<House>) db.getContent(CLIPBOARD_DATA_FORMAT);
+                tableView.getItems().addAll(contents);
+               //tableView.getItems().add(contents);//SelectionMode.SINGLE
                 completed = true;
             }
             event.setDropCompleted(completed);
@@ -95,7 +105,7 @@ public class StartController {
     }
 
     private void report() {
-        ObservableList<House> houses = tableViewUpdata.getItems();
+        houses = tableViewUpdata.getItems();
         try {
             Workbook workbook = new XSSFWorkbook();
             Sheet houseSheet = workbook.createSheet("House");
@@ -120,15 +130,15 @@ public class StartController {
     }
 
     private ObservableList<House> getData() {
-        ObservableList<House> houseData = FXCollections.observableArrayList();
-        houseData.add(new House(256, "Годовикова улица, дом 7", new BigDecimal("1286.10"), "Собственность города Москвы"));
-        houseData.add(new House(257, "Годовикова улица, дом 7", new BigDecimal("1286.10"), "Собственность города Москвы"));
-        houseData.add(new House(350, "Годовикова улица, дом 7", new BigDecimal("176.50"), "Собственность города Москвы"));
-        houseData.add(new House(765, "Годовикова улица, дом 8", new BigDecimal("1286.10"), "Собственность города Москвы"));
-        houseData.add(new House(430, "Годовикова улица, дом 9", new BigDecimal("126.30"), "Собственность города Москвы"));
-        houseData.add(new House(278, "Годовикова улица, дом 10", new BigDecimal("86.10"), "Собственность города Москвы"));
-        houseData.add(new House(259, "Годовикова улица, дом 11", new BigDecimal("1286.10"), "Собственность города Москвы"));
-        houseData.add(new House(312, "Годовикова улица, дом 99", new BigDecimal("1286.10"), "Собственность города Москвы"));
-        return houseData;
+        houses = FXCollections.observableArrayList();
+        houses.add(new House(256, "Годовикова улица, дом 7", new BigDecimal("1286.10"), "Собственность города Москвы"));
+        houses.add(new House(257, "Годовикова улица, дом 7", new BigDecimal("1286.10"), "Собственность города Москвы"));
+        houses.add(new House(350, "Годовикова улица, дом 7", new BigDecimal("176.50"), "Собственность города Москвы"));
+        houses.add(new House(765, "Годовикова улица, дом 8", new BigDecimal("1286.10"), "Собственность города Москвы"));
+        houses.add(new House(430, "Годовикова улица, дом 9", new BigDecimal("126.30"), "Собственность города Москвы"));
+        houses.add(new House(278, "Годовикова улица, дом 10", new BigDecimal("86.10"), "Собственность города Москвы"));
+        houses.add(new House(259, "Годовикова улица, дом 11", new BigDecimal("1286.10"), "Собственность города Москвы"));
+        houses.add(new House(312, "Годовикова улица, дом 99", new BigDecimal("1286.10"), "Собственность города Москвы"));
+        return houses;
     }
 }
